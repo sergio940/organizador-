@@ -95,7 +95,7 @@
 </style>
 </head>
 <body>
-  <header>Gestor Académico</header>
+  <header>Gestor Académico de Sergio</header>
 
   <div class="tabs">
     <div class="tab active" onclick="showTab('tareas')">Tareas</div>
@@ -137,6 +137,7 @@
   </div>
 
 <script>
+  // ---------- Cambio de pestañas ----------
   function showTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -144,43 +145,78 @@
     document.getElementById(tabId).classList.add('active');
   }
 
-  function agregarTarea() {
+  // ---------- Funciones para tareas ----------
+  function agregarTarea(modulo = '', fecha = '', entregada = '', observaciones = '') {
     const tabla = document.getElementById('tablaTareas').querySelector('tbody');
     const fila = document.createElement('tr');
     fila.innerHTML = `
-      <td><input type="text" placeholder="Nombre del módulo"></td>
-      <td><input type="date"></td>
-      <td><input type="text" placeholder="Sí/No"></td>
-      <td><input type="text" placeholder="Observaciones"></td>
+      <td><input type="text" value="${modulo}" placeholder="Nombre del módulo" oninput="guardarDatos()"></td>
+      <td><input type="date" value="${fecha}" oninput="guardarDatos()"></td>
+      <td><input type="text" value="${entregada}" placeholder="Sí/No" oninput="guardarDatos()"></td>
+      <td><input type="text" value="${observaciones}" placeholder="Observaciones" oninput="guardarDatos()"></td>
     `;
     tabla.appendChild(fila);
   }
 
-  function agregarExamen() {
+  // ---------- Funciones para exámenes ----------
+  function agregarExamen(fecha = '', modulo = '', tema = '', nota = '') {
     const tabla = document.getElementById('tablaExamenes').querySelector('tbody');
     const fila = document.createElement('tr');
     fila.innerHTML = `
-      <td><input type="date"></td>
-      <td><input type="text" placeholder="Nombre del módulo"></td>
-      <td><input type="text" placeholder="Tema"></td>
-      <td><input type="number" min="0" max="10" step="0.1" oninput="calcularMedia()"></td>
+      <td><input type="date" value="${fecha}" oninput="guardarDatos()"></td>
+      <td><input type="text" value="${modulo}" placeholder="Nombre del módulo" oninput="guardarDatos()"></td>
+      <td><input type="text" value="${tema}" placeholder="Tema" oninput="guardarDatos()"></td>
+      <td><input type="number" value="${nota}" min="0" max="10" step="0.1" oninput="calcularMedia(); guardarDatos()"></td>
     `;
     tabla.appendChild(fila);
   }
 
+  // ---------- Guardar datos en localStorage ----------
+  function guardarDatos() {
+    const tareas = Array.from(document.querySelectorAll('#tablaTareas tbody tr')).map(fila => ({
+      modulo: fila.children[0].querySelector('input').value,
+      fecha: fila.children[1].querySelector('input').value,
+      entregada: fila.children[2].querySelector('input').value,
+      observaciones: fila.children[3].querySelector('input').value
+    }));
+
+    const examenes = Array.from(document.querySelectorAll('#tablaExamenes tbody tr')).map(fila => ({
+      fecha: fila.children[0].querySelector('input').value,
+      modulo: fila.children[1].querySelector('input').value,
+      tema: fila.children[2].querySelector('input').value,
+      nota: fila.children[3].querySelector('input').value
+    }));
+
+    localStorage.setItem('tareas', JSON.stringify(tareas));
+    localStorage.setItem('examenes', JSON.stringify(examenes));
+  }
+
+  // ---------- Cargar datos guardados ----------
+  function cargarDatos() {
+    const tareas = JSON.parse(localStorage.getItem('tareas') || '[]');
+    const examenes = JSON.parse(localStorage.getItem('examenes') || '[]');
+
+    tareas.forEach(t => agregarTarea(t.modulo, t.fecha, t.entregada, t.observaciones));
+    examenes.forEach(e => agregarExamen(e.fecha, e.modulo, e.tema, e.nota));
+
+    calcularMedia();
+  }
+
+  // ---------- Calcular media y mostrar mensaje ----------
   function calcularMedia() {
     const notas = Array.from(document.querySelectorAll('#tablaExamenes tbody input[type="number"]'))
       .map(n => parseFloat(n.value))
       .filter(n => !isNaN(n));
 
+    const resultado = document.getElementById('resultadoMedia');
+
     if (notas.length === 0) {
-      document.getElementById('resultadoMedia').textContent = 'Nota media: -';
-      document.getElementById('resultadoMedia').style.background = '';
+      resultado.textContent = 'Nota media: -';
+      resultado.style.background = '';
       return;
     }
 
     const media = notas.reduce((a, b) => a + b, 0) / notas.length;
-    const resultado = document.getElementById('resultadoMedia');
     resultado.textContent = `Nota media: ${media.toFixed(2)} `;
 
     let color = "", mensaje = "";
@@ -195,6 +231,9 @@
     resultado.style.color = (color === "yellow") ? "black" : "white";
     resultado.textContent += ` → ${mensaje}`;
   }
+
+  // ---------- Inicialización ----------
+  window.onload = cargarDatos;
 </script>
 </body>
 </html>

@@ -95,7 +95,7 @@
 </style>
 </head>
 <body>
-  <header>Gestor Académico de Sergio</header>
+  <header>Gestor Académico</header>
 
   <div class="tabs">
     <div class="tab active" onclick="showTab('tareas')">Tareas</div>

@@ -78,10 +78,19 @@
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
+    margin: 0.3rem;
   }
 
   button:hover {
     background: #354f52;
+  }
+
+  .delete {
+    background: #c0392b;
+  }
+
+  .delete:hover {
+    background: #922b21;
   }
 
   .resultado {
@@ -95,7 +104,7 @@
 </style>
 </head>
 <body>
-  <header>Gestor Académico de Sergio</header>
+  <header>Gestor Académico</header>
 
   <div class="tabs">
     <div class="tab active" onclick="showTab('tareas')">Tareas</div>
@@ -111,6 +120,7 @@
           <th>Fecha de Entrega</th>
           <th>Entregada</th>
           <th>Observaciones</th>
+          <th>Eliminar</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -127,6 +137,7 @@
           <th>Módulo</th>
           <th>Tema</th>
           <th>Nota</th>
+          <th>Eliminar</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -134,6 +145,10 @@
     <button onclick="agregarExamen()">Añadir Examen</button>
 
     <div class="resultado" id="resultadoMedia">Nota media: -</div>
+  </div>
+
+  <div style="text-align:center; padding:1rem;">
+    <button class="delete" onclick="borrarTodo()">🗑️ Borrar todos los datos</button>
   </div>
 
 <script>
@@ -154,6 +169,7 @@
       <td><input type="date" value="${fecha}" oninput="guardarDatos()"></td>
       <td><input type="text" value="${entregada}" placeholder="Sí/No" oninput="guardarDatos()"></td>
       <td><input type="text" value="${observaciones}" placeholder="Observaciones" oninput="guardarDatos()"></td>
+      <td><button class="delete" onclick="eliminarFila(this)">❌</button></td>
     `;
     tabla.appendChild(fila);
   }
@@ -167,8 +183,16 @@
       <td><input type="text" value="${modulo}" placeholder="Nombre del módulo" oninput="guardarDatos()"></td>
       <td><input type="text" value="${tema}" placeholder="Tema" oninput="guardarDatos()"></td>
       <td><input type="number" value="${nota}" min="0" max="10" step="0.1" oninput="calcularMedia(); guardarDatos()"></td>
+      <td><button class="delete" onclick="eliminarFila(this)">❌</button></td>
     `;
     tabla.appendChild(fila);
+  }
+
+  // ---------- Eliminar fila individual ----------
+  function eliminarFila(boton) {
+    boton.closest('tr').remove();
+    guardarDatos();
+    calcularMedia();
   }
 
   // ---------- Guardar datos en localStorage ----------
@@ -230,6 +254,17 @@
     resultado.style.background = color;
     resultado.style.color = (color === "yellow") ? "black" : "white";
     resultado.textContent += ` → ${mensaje}`;
+  }
+
+  // ---------- Borrar todo ----------
+  function borrarTodo() {
+    if (confirm("¿Seguro que quieres borrar todas las tareas y exámenes?")) {
+      localStorage.clear();
+      document.querySelector('#tablaTareas tbody').innerHTML = '';
+      document.querySelector('#tablaExamenes tbody').innerHTML = '';
+      document.getElementById('resultadoMedia').textContent = 'Nota media: -';
+      document.getElementById('resultadoMedia').style.background = '';
+    }
   }
 
   // ---------- Inicialización ----------
